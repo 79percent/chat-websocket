@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>当前用户：111</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <div id="app">
+    <div id="msg"></div>
+    <div class="footer">
+      <input type="text" class="textInput">
+      <button class="sendBtn">发送</button>
+    </div>
+  </div>
+
+  <script>
+    const userId = '111';
+    const targetId = '222';
+    const msgDom = document.getElementById("msg");
+    const input = document.querySelector(".textInput");
+    const btn = document.querySelector(".sendBtn");
+    if (window.WebSocket) {
+      var ws = new WebSocket('ws://127.0.0.1:8001');
+      btn.onclick = async () => {
+        const data = {
+          userId,
+          targetId,
+          message: userId + ": “" + input.value + "”",
+        }
+        await ws.send(JSON.stringify(data));
+        input.value = "";
+      }
+      ws.onopen = (e) => {
+        const data = {
+          userId,
+          targetId,
+        }
+        ws.send(JSON.stringify(data));
+      }
+      ws.onclose = (e) => {
+        console.log("服务器关闭");
+      }
+      ws.onerror = () => {
+        console.log("连接出错");
+      }
+      ws.onmessage = (e) => {
+        const res = JSON.parse(e.data);
+        const {
+          id,
+          msg
+        } = res;
+        const msgItem = document.createElement("div");
+        msgItem.innerHTML = msg;
+        if (userId === id) {
+          msgItem.classList.add("textRight");
+        } else {
+          msgItem.classList.add("textLeft");
+        }
+        msgDom.appendChild(msgItem);
+      }
+    }
+  </script>
+</body>
+
+</html>
